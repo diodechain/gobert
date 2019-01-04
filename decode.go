@@ -147,12 +147,12 @@ func readList(r io.Reader) ([]Term, error) {
 func readBin(r io.Reader) ([]uint8, error) {
 	size, err := read4(r)
 	if err != nil {
-		return []uint8{}, err
+		return []byte{}, err
 	}
 
 	bytes, err := ioutil.ReadAll(io.LimitReader(r, int64(size)))
 	if err != nil {
-		return []uint8{}, err
+		return []byte{}, err
 	}
 
 	return bytes, nil

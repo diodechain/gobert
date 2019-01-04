@@ -58,6 +58,10 @@ func TestEncode(t *testing.T) {
 	// String
 	assertEncode(t, "foo", []byte{131, 107, 0, 3, 102, 111, 111})
 
+	// Binary
+	assertEncode(t, []byte{1, 2, 3, 4},
+		[]byte{131, 109, 0, 0, 0, 4, 1, 2, 3, 4})
+
 	// List
 	assertEncode(t, [1]Term{1},
 		[]byte{131, 108, 0, 0, 0, 1, 97, 1, 106})

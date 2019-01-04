@@ -58,6 +58,13 @@ func writeSmallTuple(w io.Writer, t reflect.Value) {
 	}
 }
 
+func writeBinary(w io.Writer, a []byte) {
+	write1(w, BinTag)
+	size := len(a)
+	write4(w, uint32(size))
+	w.Write(a)
+}
+
 func writeNil(w io.Writer) { write1(w, NilTag) }
 
 func writeString(w io.Writer, s string) {
@@ -96,7 +103,12 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 			writeString(w, v.String())
 		}
 	case reflect.Slice:
-		writeSmallTuple(w, v)
+		if b, ok := v.Interface().([]byte); ok {
+			writeBinary(w, b)
+		} else {
+			writeSmallTuple(w, v)
+		}
+
 	case reflect.Array:
 		writeList(w, v)
 	case reflect.Interface:
