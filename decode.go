@@ -40,7 +40,7 @@ func read4(r io.Reader) (int, error) {
 	}
 
 	ui32 := binary.BigEndian.Uint32(bits)
-	return int(ui32), nil
+	return int(int32(ui32)), nil
 }
 
 func readSmallInt(r io.Reader) (int, error) {
