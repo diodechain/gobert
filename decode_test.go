@@ -165,6 +165,9 @@ func TestDecode(t *testing.T) {
 	assertDecode(t, []byte{131, 109, 0, 0, 0, 5, 104, 101, 108, 108, 111},
 		[]byte{104, 101, 108, 108, 111})
 
+	// Bitstring
+	assertDecode(t, []byte{131, 77, 0, 0, 0, 1, 1, 128}, Bitstring{[]byte{128}, 1})
+
 	// Complex
 	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108}, nil)
 	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 4, 116, 114, 117, 101}, true)

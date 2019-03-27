@@ -158,6 +158,25 @@ func readBin(r io.Reader) ([]uint8, error) {
 	return bytes, nil
 }
 
+func readBit(r io.Reader) (Bitstring, error) {
+	size, err := read4(r)
+	if err != nil {
+		return Bitstring{}, err
+	}
+
+	bits, err := read1(r)
+	if err != nil {
+		return Bitstring{}, err
+	}
+
+	bytes, err := ioutil.ReadAll(io.LimitReader(r, int64(size)))
+	if err != nil {
+		return Bitstring{}, err
+	}
+
+	return Bitstring{bytes, uint8(bits)}, nil
+}
+
 func readComplex(r io.Reader) (Term, error) {
 	term, err := readTag(r)
 
@@ -211,6 +230,8 @@ func readTag(r io.Reader) (Term, error) {
 		return readList(r)
 	case BinTag:
 		return readBin(r)
+	case BitTag:
+		return readBit(r)
 	}
 
 	return nil, ErrUnknownType

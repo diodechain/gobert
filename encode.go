@@ -65,6 +65,14 @@ func writeBinary(w io.Writer, a []byte) {
 	w.Write(a)
 }
 
+func writeBitstring(w io.Writer, a []byte, bits uint8) {
+	write1(w, BitTag)
+	size := len(a)
+	write4(w, uint32(size))
+	write1(w, bits)
+	w.Write(a)
+}
+
 func writeNil(w io.Writer) { write1(w, NilTag) }
 
 func writeString(w io.Writer, s string) {
@@ -113,6 +121,12 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 		writeList(w, v)
 	case reflect.Interface:
 		writeTag(w, v.Elem())
+	case reflect.Struct:
+		if b, ok := v.Interface().(Bitstring); ok {
+			writeBitstring(w, b.Bytes, b.Bits)
+		} else {
+			err = ErrUnknownType
+		}
 	default:
 		if !reflect.Indirect(val).IsValid() {
 			writeNil(w)

@@ -14,9 +14,14 @@ const (
 	StringTag      = 107
 	ListTag        = 108
 	BinTag         = 109
+	BitTag         = 77
 )
 
 type Atom string
+type Bitstring struct {
+	Bytes []byte
+	Bits  uint8
+}
 
 const (
 	BertAtom  = Atom("bert")
