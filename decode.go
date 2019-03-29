@@ -12,6 +12,7 @@ import (
 
 var ErrBadMagic error = errors.New("bad magic")
 var ErrUnknownType error = errors.New("unknown type")
+var ErrUintType error = errors.New("Unsupported value type uint.")
 
 func read1(r io.Reader) (int, error) {
 	bits, err := ioutil.ReadAll(io.LimitReader(r, 1))

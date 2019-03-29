@@ -78,6 +78,12 @@ func TestEncode(t *testing.T) {
 			100, 0, 1, 97, 100, 0, 1, 98,
 			106,
 		})
+	tuple := make([][]byte, 2)
+	tuple[0] = []byte("0")
+	tuple[1] = []byte("1")
+	assertEncode(t, tuple, []byte{131, 104, 2, 109, 0, 0, 0, 1, 48, 109, 0, 0, 0, 1, 49})
+	assertNotEncode(t, [2]Term{uint(1), uint(2)}, "Unsupported value type uint.")
+	assertNotEncode(t, uint(1), "Unsupported value type uint.")
 }
 
 func TestMarshal(t *testing.T) {
@@ -103,5 +109,16 @@ func assertEncode(t *testing.T, actual interface{}, expected []byte) {
 		t.Errorf("Encode(%v) returned error '%v'", actual, err)
 	} else if !reflect.DeepEqual(val, expected) {
 		t.Errorf("Decode(%v) = %v, expected %v", actual, val, expected)
+	}
+}
+
+func assertNotEncode(t *testing.T, actual interface{}, errorMessage string) {
+	_, err := Encode(actual)
+	if err != nil {
+		if err.Error() != errorMessage {
+			t.Errorf("Encode(%v) should return error %s but not '%v'", actual, errorMessage, err)
+		}
+	} else {
+		t.Errorf("Encode(%v) expected error %s", actual, errorMessage)
 	}
 }

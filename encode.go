@@ -48,14 +48,18 @@ func writeAtom(w io.Writer, a string) {
 	w.Write([]byte(a))
 }
 
-func writeSmallTuple(w io.Writer, t reflect.Value) {
+func writeSmallTuple(w io.Writer, t reflect.Value) (err error) {
 	write1(w, SmallTupleTag)
 	size := t.Len()
 	write1(w, uint8(size))
 
 	for i := 0; i < size; i++ {
-		writeTag(w, t.Index(i))
+		err = writeTag(w, t.Index(i))
+		if err != nil {
+			break
+		}
 	}
+	return
 }
 
 func writeBinary(w io.Writer, a []byte) {
@@ -81,16 +85,20 @@ func writeString(w io.Writer, s string) {
 	w.Write([]byte(s))
 }
 
-func writeList(w io.Writer, l reflect.Value) {
+func writeList(w io.Writer, l reflect.Value) (err error) {
 	write1(w, ListTag)
 	size := l.Len()
 	write4(w, uint32(size))
 
 	for i := 0; i < size; i++ {
-		writeTag(w, l.Index(i))
+		err = writeTag(w, l.Index(i))
+		if err != nil {
+			break
+		}
 	}
 
 	writeNil(w)
+	return
 }
 
 func writeTag(w io.Writer, val reflect.Value) (err error) {
@@ -102,6 +110,8 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 		} else {
 			writeInt(w, uint32(n))
 		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		err = ErrUintType
 	case reflect.Float32, reflect.Float64:
 		writeFloat(w, float32(v.Float()))
 	case reflect.String:
@@ -114,13 +124,13 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 		if b, ok := v.Interface().([]byte); ok {
 			writeBinary(w, b)
 		} else {
-			writeSmallTuple(w, v)
+			err = writeSmallTuple(w, v)
 		}
 
 	case reflect.Array:
-		writeList(w, v)
+		err = writeList(w, v)
 	case reflect.Interface:
-		writeTag(w, v.Elem())
+		err = writeTag(w, v.Elem())
 	case reflect.Struct:
 		if b, ok := v.Interface().(Bitstring); ok {
 			writeBitstring(w, b.Bytes, b.Bits)
