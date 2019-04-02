@@ -134,6 +134,8 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 	case reflect.Struct:
 		if b, ok := v.Interface().(Bitstring); ok {
 			writeBitstring(w, b.Bytes, b.Bits)
+		} else if l, ok := v.Interface().(List); ok {
+			err = writeList(w, reflect.ValueOf(l.Items))
 		} else {
 			err = ErrUnknownType
 		}

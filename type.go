@@ -22,6 +22,9 @@ type Bitstring struct {
 	Bytes []byte
 	Bits  uint8
 }
+type List struct {
+	Items []Term
+}
 
 const (
 	BertAtom  = Atom("bert")

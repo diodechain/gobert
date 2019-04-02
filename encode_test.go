@@ -51,6 +51,10 @@ func TestEncode(t *testing.T) {
 			97, 23,
 			97, 42,
 		})
+	tuple := make([][]byte, 2)
+	tuple[0] = []byte("0")
+	tuple[1] = []byte("1")
+	assertEncode(t, tuple, []byte{131, 104, 2, 109, 0, 0, 0, 1, 48, 109, 0, 0, 0, 1, 49})
 
 	// Nil
 	assertEncode(t, nil, []byte{131, 106})
@@ -78,10 +82,12 @@ func TestEncode(t *testing.T) {
 			100, 0, 1, 97, 100, 0, 1, 98,
 			106,
 		})
-	tuple := make([][]byte, 2)
-	tuple[0] = []byte("0")
-	tuple[1] = []byte("1")
-	assertEncode(t, tuple, []byte{131, 104, 2, 109, 0, 0, 0, 1, 48, 109, 0, 0, 0, 1, 49})
+	// dynamic list
+	list := List{}
+	list.Items = append(list.Items, 1)
+	list.Items = append(list.Items, 2)
+	list.Items = append(list.Items, 3)
+	assertEncode(t, list, []byte{131, 108, 0, 0, 0, 3, 97, 1, 97, 2, 97, 3, 106})
 	assertNotEncode(t, [2]Term{uint(1), uint(2)}, "Unsupported value type uint.")
 	assertNotEncode(t, uint(1), "Unsupported value type uint.")
 }
