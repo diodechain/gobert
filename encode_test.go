@@ -88,8 +88,14 @@ func TestEncode(t *testing.T) {
 	list.Items = append(list.Items, 2)
 	list.Items = append(list.Items, 3)
 	assertEncode(t, list, []byte{131, 108, 0, 0, 0, 3, 97, 1, 97, 2, 97, 3, 106})
-	assertNotEncode(t, [2]Term{uint(1), uint(2)}, "Unsupported value type uint.")
-	assertNotEncode(t, uint(1), "Unsupported value type uint.")
+	assertEncode(t, [2]Term{uint(1), uint(2)}, []byte{131, 108, 0, 0, 0, 2, 97, 1, 97, 2, 106})
+	assertEncode(t, uint(1), []byte{131, 97, 1})
+
+	// larger than 32-bit
+	big := 100000000000
+	assertEncode(t, uint(big), []byte{131, 110, 5, 0, 0, 232, 118, 72, 23})
+	assertEncode(t, big, []byte{131, 110, 5, 0, 0, 232, 118, 72, 23})
+	assertEncode(t, -big, []byte{131, 110, 5, 1, 0, 232, 118, 72, 23})
 }
 
 func TestMarshal(t *testing.T) {

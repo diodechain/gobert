@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"math/big"
 	"reflect"
 )
 
@@ -30,6 +31,23 @@ func writeSmallInt(w io.Writer, n uint8) {
 func writeInt(w io.Writer, n uint32) {
 	write1(w, IntTag)
 	write4(w, n)
+}
+
+func writeBig(w io.Writer, n big.Int) {
+	write1(w, SmallBignumTag)
+	bytes := n.Bytes()
+	// converting big endian to small endian
+	// http://erlang.org/doc/apps/erts/erl_ext_dist.html#small_big_ext
+	for i, j := 0, len(bytes)-1; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	write1(w, uint8(len(bytes)))
+	if n.IsUint64() {
+		write1(w, 0)
+	} else {
+		write1(w, 1)
+	}
+	w.Write(bytes)
 }
 
 func writeFloat(w io.Writer, f float32) {
@@ -107,11 +125,22 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 		n := v.Int()
 		if n >= 0 && n < 256 {
 			writeSmallInt(w, uint8(n))
-		} else {
+		} else if n >= -2147483648 && n <= 2147483647 {
 			writeInt(w, uint32(n))
+		} else {
+			writeBig(w, *big.NewInt(n))
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		err = ErrUintType
+		n := v.Uint()
+		if n >= 0 && n < 256 {
+			writeSmallInt(w, uint8(n))
+		} else if n <= 4294967295 {
+			writeInt(w, uint32(n))
+		} else {
+			var bn big.Int
+			bn.SetUint64(n)
+			writeBig(w, bn)
+		}
 	case reflect.Float32, reflect.Float64:
 		writeFloat(w, float32(v.Float()))
 	case reflect.String:
