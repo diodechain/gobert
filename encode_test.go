@@ -18,6 +18,8 @@ func TestEncode(t *testing.T) {
 	assertEncode(t, -8, []byte{131, 98, 255, 255, 255, 248})
 	assertEncode(t, 5000, []byte{131, 98, 0, 0, 19, 136})
 	assertEncode(t, -5000, []byte{131, 98, 255, 255, 236, 120})
+	assertEncode(t, 2162362176, []byte{131, 110, 4, 0, 64, 7, 227, 128})
+	assertEncode(t, uint64(2162362176), []byte{131, 110, 4, 0, 64, 7, 227, 128})
 
 	// Float
 	assertEncode(t, 0.5, []byte{131, 99, 53, 46, 48, 48, 48, 48, 48, 48,
@@ -120,7 +122,7 @@ func assertEncode(t *testing.T, actual interface{}, expected []byte) {
 	if err != nil {
 		t.Errorf("Encode(%v) returned error '%v'", actual, err)
 	} else if !reflect.DeepEqual(val, expected) {
-		t.Errorf("Decode(%v) = %v, expected %v", actual, val, expected)
+		t.Errorf("Encode(%v) = %v, but expected %v", actual, val, expected)
 	}
 }
 

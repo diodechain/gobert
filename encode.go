@@ -134,7 +134,7 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 		n := v.Uint()
 		if n >= 0 && n < 256 {
 			writeSmallInt(w, uint8(n))
-		} else if n <= 4294967295 {
+		} else if n <= 2147483647 {
 			writeInt(w, uint32(n))
 		} else {
 			var bn big.Int
