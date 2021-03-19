@@ -91,7 +91,7 @@ func writeBitstring(w io.Writer, a []byte, bits uint8) {
 	write1(w, BitTag)
 	size := len(a)
 	write4(w, uint32(size))
-	write1(w, bits)
+	write1(w, bits%8)
 	w.Write(a)
 }
 
@@ -162,7 +162,11 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 		err = writeTag(w, v.Elem())
 	case reflect.Struct:
 		if b, ok := v.Interface().(Bitstring); ok {
-			writeBitstring(w, b.Bytes, b.Bits)
+			if b.Bits%8 != 0 {
+				writeBitstring(w, b.Bytes, b.Bits)
+			} else {
+				writeBinary(w, b.Bytes[0:b.Bits/8])
+			}
 		} else if l, ok := v.Interface().(List); ok {
 			err = writeList(w, reflect.ValueOf(l.Items))
 		} else {
