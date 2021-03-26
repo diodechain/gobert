@@ -89,10 +89,14 @@ func writeBinary(w io.Writer, a []byte) {
 
 func writeBitstring(w io.Writer, a []byte, bits uint8) {
 	write1(w, BitTag)
-	size := len(a)
+	size := (int(bits) + 7) / 8
 	write4(w, uint32(size))
 	write1(w, bits%8)
-	w.Write(a)
+
+	for len(a) < size {
+		a = append([]byte{0}, a...)
+	}
+	w.Write(a[:size])
 }
 
 func writeNil(w io.Writer) { write1(w, NilTag) }

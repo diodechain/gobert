@@ -72,6 +72,7 @@ func TestEncode(t *testing.T) {
 	assertEncode(t, Bitstring{[]byte{128}, 1}, []byte{131, 77, 0, 0, 0, 1, 1, 128})
 	assertEncode(t, Bitstring{[]byte{32, 128}, 9}, []byte{131, 77, 0, 0, 0, 2, 1, 32, 128})
 	assertEncode(t, Bitstring{[]byte{128}, 8}, []byte{131, 109, 0, 0, 0, 1, 128})
+	assertEncode(t, Bitstring{[]byte{3}, 10}, []byte{131, 77, 0, 0, 0, 2, 2, 0, 3})
 
 	// List
 	assertEncode(t, [1]Term{1},
