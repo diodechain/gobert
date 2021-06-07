@@ -33,7 +33,19 @@ func writeInt(w io.Writer, n uint32) {
 	write4(w, n)
 }
 
-func writeBig(w io.Writer, n big.Int) {
+func writeNumber(w io.Writer, n big.Int) {
+	if n.IsInt64() {
+		x := n.Int64()
+		if x >= 0 && x < 256 {
+			writeSmallInt(w, uint8(x))
+			return
+		}
+		if x >= -2147483648 && x <= 2147483647 {
+			writeInt(w, uint32(x))
+			return
+		}
+	}
+
 	write1(w, SmallBignumTag)
 	bytes := n.Bytes()
 	// converting big endian to small endian
@@ -128,24 +140,12 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 	switch v := val; v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		n := v.Int()
-		if n >= 0 && n < 256 {
-			writeSmallInt(w, uint8(n))
-		} else if n >= -2147483648 && n <= 2147483647 {
-			writeInt(w, uint32(n))
-		} else {
-			writeBig(w, *big.NewInt(n))
-		}
+		writeNumber(w, *big.NewInt(n))
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		n := v.Uint()
-		if n >= 0 && n < 256 {
-			writeSmallInt(w, uint8(n))
-		} else if n <= 2147483647 {
-			writeInt(w, uint32(n))
-		} else {
-			var bn big.Int
-			bn.SetUint64(n)
-			writeBig(w, bn)
-		}
+		var bn big.Int
+		bn.SetUint64(n)
+		writeNumber(w, bn)
 	case reflect.Float32, reflect.Float64:
 		writeFloat(w, float32(v.Float()))
 	case reflect.String:
@@ -175,7 +175,7 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 		} else if l, ok := v.Interface().(List); ok {
 			err = writeList(w, reflect.ValueOf(l.Items))
 		} else if bn, ok := v.Interface().(big.Int); ok {
-			writeBig(w, bn)
+			writeNumber(w, bn)
 		} else {
 			err = ErrUnknownType
 		}

@@ -20,6 +20,9 @@ func TestEncode(t *testing.T) {
 	assertEncode(t, 5000, []byte{131, 98, 0, 0, 19, 136})
 	assertEncode(t, -5000, []byte{131, 98, 255, 255, 236, 120})
 	assertEncode(t, 2162362176, []byte{131, 110, 4, 0, 64, 7, 227, 128})
+	assertEncode(t, -2162362176, []byte{131, 110, 4, 1, 64, 7, 227, 128})
+	assertEncode(t, 2147483647, []byte{131, 98, 127, 255, 255, 255})
+	assertEncode(t, -2147483647, []byte{131, 98, 128, 0, 0, 1})
 	assertEncode(t, uint64(2162362176), []byte{131, 110, 4, 0, 64, 7, 227, 128})
 
 	// Big Integer
@@ -28,6 +31,8 @@ func TestEncode(t *testing.T) {
 	assertEncode(t, n, []byte{131, 110, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1})
 	n.SetString("18446744073709551615", 10)
 	assertEncode(t, n, []byte{131, 110, 8, 0, 255, 255, 255, 255, 255, 255, 255, 255})
+	n.SetString("5000", 10)
+	assertEncode(t, n, []byte{131, 98, 0, 0, 19, 136})
 
 	// Float
 	assertEncode(t, 0.5, []byte{131, 99, 53, 46, 48, 48, 48, 48, 48, 48,
