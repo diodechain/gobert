@@ -2,6 +2,7 @@ package bert
 
 import (
 	"bytes"
+	"math/big"
 	"reflect"
 	"testing"
 )
@@ -20,6 +21,13 @@ func TestEncode(t *testing.T) {
 	assertEncode(t, -5000, []byte{131, 98, 255, 255, 236, 120})
 	assertEncode(t, 2162362176, []byte{131, 110, 4, 0, 64, 7, 227, 128})
 	assertEncode(t, uint64(2162362176), []byte{131, 110, 4, 0, 64, 7, 227, 128})
+
+	// Big Integer
+	n := big.NewInt(0)
+	n.SetString("18446744073709551616", 10)
+	assertEncode(t, n, []byte{131, 110, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1})
+	n.SetString("18446744073709551615", 10)
+	assertEncode(t, n, []byte{131, 110, 8, 0, 255, 255, 255, 255, 255, 255, 255, 255})
 
 	// Float
 	assertEncode(t, 0.5, []byte{131, 99, 53, 46, 48, 48, 48, 48, 48, 48,

@@ -2,31 +2,32 @@ package bert
 
 import (
 	"bytes"
+	"fmt"
+	"math/big"
 	"reflect"
 	"testing"
-	"fmt"
 )
 
 func ExampleDecode() {
-    i, err := Decode([]byte{131, 97, 42})
-    if err != nil {
-	    fmt.Println(err)
-    }
-    fmt.Printf("%#v\n", i)
-    s, err := Decode([]byte{131, 107, 0, 3, 102, 111, 111})
-    if err != nil {
-	    fmt.Println(err)
-    }
-    fmt.Printf("%#v\n", s)
-    a, err := Decode([]byte{131, 104, 1, 100, 0, 3, 102, 111, 111})
-    if err != nil {
-	    fmt.Println(err)
-    }
-    fmt.Printf("%#v\n", a)
-    // Output:
-    // 42
-    // "foo"
-    // []bert.Term{"foo"}
+	i, err := Decode([]byte{131, 97, 42})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%#v\n", i)
+	s, err := Decode([]byte{131, 107, 0, 3, 102, 111, 111})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%#v\n", s)
+	a, err := Decode([]byte{131, 104, 1, 100, 0, 3, 102, 111, 111})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%#v\n", a)
+	// Output:
+	// 42
+	// "foo"
+	// []bert.Term{"foo"}
 }
 
 func TestDecode(t *testing.T) {
@@ -44,14 +45,17 @@ func TestDecode(t *testing.T) {
 	assertDecode(t, []byte{131, 98, 255, 255, 255, 248}, -8)
 	assertDecode(t, []byte{131, 98, 0, 0, 19, 136}, 5000)
 	assertDecode(t, []byte{131, 98, 255, 255, 236, 120}, -5000)
+	assertDecode(t, []byte{131, 98, 58, 222, 104, 177}, 987654321)
+	assertDecode(t, []byte{131, 98, 197, 33, 151, 79}, -987654321)
 
 	// Small Bignum
-	// assertDecode(t, []byte{131, 110, 4, 0, 177, 104, 222, 58},
-	// 	987654321);
-	// assertDecode(t, []byte{131, 110, 4, 1, 177, 104, 222, 58},
-	// 	-987654321);
-
-	// Large Bignum
+	n := *big.NewInt(0)
+	n.SetString("18446744073709551616", 10)
+	assertDecode(t, []byte{131, 110, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, n)
+	n.SetString("-18446744073709551616", 10)
+	assertDecode(t, []byte{131, 110, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1}, n)
+	n.SetString("18446744073709551615", 10)
+	assertDecode(t, []byte{131, 110, 8, 0, 255, 255, 255, 255, 255, 255, 255, 255}, n)
 
 	// Float
 	assertDecode(t, []byte{131, 99, 53, 46, 48, 48, 48, 48, 48, 48, 48,

@@ -42,7 +42,7 @@ func writeBig(w io.Writer, n big.Int) {
 		bytes[i], bytes[j] = bytes[j], bytes[i]
 	}
 	write1(w, uint8(len(bytes)))
-	if n.IsUint64() {
+	if n.Sign() > -1 {
 		write1(w, 0)
 	} else {
 		write1(w, 1)
@@ -124,6 +124,7 @@ func writeList(w io.Writer, l reflect.Value) (err error) {
 }
 
 func writeTag(w io.Writer, val reflect.Value) (err error) {
+	val = reflect.Indirect(val)
 	switch v := val; v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		n := v.Int()
@@ -173,6 +174,8 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 			}
 		} else if l, ok := v.Interface().(List); ok {
 			err = writeList(w, reflect.ValueOf(l.Items))
+		} else if bn, ok := v.Interface().(big.Int); ok {
+			writeBig(w, bn)
 		} else {
 			err = ErrUnknownType
 		}

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"reflect"
 	"strconv"
 )
@@ -49,6 +50,36 @@ func readSmallInt(r io.Reader) (int, error) {
 }
 
 func readInt(r io.Reader) (int, error) { return read4(r) }
+
+func readBigInt(r io.Reader) (big.Int, error) {
+	length, err := read1(r)
+	if err != nil {
+		return *big.NewInt(0), err
+	}
+
+	sign, err := read1(r)
+	if err != nil {
+		return *big.NewInt(0), err
+	}
+
+	bytes, err := ioutil.ReadAll(io.LimitReader(r, int64(length)))
+	if err != nil {
+		return *big.NewInt(0), err
+	}
+
+	// converting big endian to small endian
+	// http://erlang.org/doc/apps/erts/erl_ext_dist.html#small_big_ext
+	for i, j := 0, len(bytes)-1; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	n := big.NewInt(0)
+	n.SetBytes(bytes)
+	if sign == 1 {
+		n.Neg(n)
+	}
+
+	return *n, nil
+}
 
 func readFloat(r io.Reader) (float32, error) {
 	bits, err := ioutil.ReadAll(io.LimitReader(r, 31))
@@ -212,7 +243,7 @@ func readTag(r io.Reader) (Term, error) {
 	case IntTag:
 		return readInt(r)
 	case SmallBignumTag:
-		return nil, ErrUnknownType
+		return readBigInt(r)
 	case LargeBignumTag:
 		return nil, ErrUnknownType
 	case FloatTag:
